@@ -20,229 +20,426 @@
 <!--    <img src="./unsplash-5.jpeg" alt="Sample image https://unsplash.com/photos/PNKwdJ8WetM"/> -->
     Your Rotation Angle is : <input type="text" id="angle" value="25"></input>
 	<input type="button" id="myButton" value="Rotate"></input>
-	
-    <script>
-        let canvas, ctx,myButton;
-        
-        document.addEventListener('DOMContentLoaded', (ev)=>{
-            canvas = document.getElementById('canvas');
-			myButton = document.getElementById('myButton');
-            ctx = canvas.getContext('2d'); 
-            canvas.width = 1350;
-            canvas.height = 900;
-            
-            let imgObj = new Image();
-			 imgObj.src = './unsplash-5.jpeg';
-            imgObj.onload = function() {
-                let w = canvas.width;
-                let nw = imgObj.naturalWidth;   //1350
-                let nh = imgObj.naturalHeight;  //900
-                let aspect = nw / nh;
-                let h = w / aspect;
-                console.log('height', h)
-                canvas.height = h;
-                ctx.drawImage(imgObj, 0, 0, w, h);
-                //ctx.drawImage(imgObj, dx, dy);
-                //ctx.drawImage(imgObj, dx, dy, dw, dh);
-                //ctx.drawImage(imgObj, sx, sy, sw, sh, dx, dy, dw, dh);
-            };
-            
-           
-            
-            //canvas.addEventListener('click', greyscale);
-            //canvas.addEventListener('click', colorChannel);
-			//canvas.addEventListener('click', pixelConsole);
-			canvas.addEventListener('click', convertData);
-			myButton.addEventListener('click',drawBestFit);
-        });
-        
-         function drawBestFit() {
-		 canvas = document.getElementById('canvas');
-		var imgDataVal = ctx.getImageData(0, 0, canvas.width, canvas.height);
-		console.log(imgDataVal);
+
+<script >
+    let canvas, ctx, myButton;
+
+document.addEventListener('DOMContentLoaded', (ev) => {
+    canvas = document.getElementById('canvas');
+    myButton = document.getElementById('myButton');
+    ctx = canvas.getContext('2d');
+    canvas.width = 1350;
+    canvas.height = 900;
+
+    let imgObj = new Image();
+    imgObj.src = './unsplash-5.jpeg';
+    imgObj.onload = function() {
+        let w = canvas.width;
+        let nw = imgObj.naturalWidth; //1350
+		//alert("imgObj.naturalWidth is " + nw);
+        let nh = imgObj.naturalHeight; //900
+		//alert("imgObj.naturalHeight is " + nh);
+        let aspect = nw / nh;
+        let h = w / aspect;
+        console.log('height', h)
+        canvas.height = h;
+		
+		//alert("canvas.height is " + h);
+        ctx.drawImage(imgObj, 0, 0, w, h);
+		ctx.imageSmoothingEnabled =false;
+        //ctx.drawImage(imgObj, dx, dy);
+        //ctx.drawImage(imgObj, dx, dy, dw, dh);
+        //ctx.drawImage(imgObj, sx, sy, sw, sh, dx, dy, dw, dh);
+    };
+
+
+
+    //canvas.addEventListener('click', greyscale);
+    //canvas.addEventListener('click', colorChannel);
+    //canvas.addEventListener('click', pixelConsole);
+    //canvas.addEventListener('click', convertData);
+    //canvas.addEventListener('click', rotateDataOne);
+	//canvas.addEventListener('click', rotateDataOneWithAngle);
+	canvas.addEventListener('click', rotateDataOneWithAngleTwo);
+    myButton.addEventListener('click', drawBestFit);
+});
+
+//******************************************************************************
+function drawBestFit() {
+    canvas = document.getElementById('canvas');
+    var imgDataVal = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    console.log(imgDataVal);
+    
+    var degrees = document.getElementById("angle").value;
+    alert(degrees);
+
+    degrees = degrees
+
+    var piVal = Math.PI;
+    angle = degrees * (piVal / 180);
+    if (angle == '' || angle == undefined) {
+        angle = 25 * (piVal / 180);
+    }
 	let image = new Image();
-	var degrees  = document.getElementById("angle").value;
-	alert(degrees);
-	
-	degrees = degrees
-	
-	var piVal = Math.PI;
-  angle =  degrees * (piVal/180);
-	if(angle == '' || angle == undefined){
-	angle = 25 * (piVal/180);
-	}
-	image.src = './unsplash-5.jpeg';
+    image.src = './unsplash-5.jpeg';
     var dist = Math.sqrt(Math.pow(canvas.width, 2) + Math.pow(canvas.height, 2))
     var diagAngle = Math.asin(canvas.height / dist)
 
     var a1 = ((angle % (Math.PI * 2)) + Math.PI * 4) % (Math.PI * 2)
     if (a1 > Math.PI)
-      a1 -= Math.PI
+        a1 -= Math.PI
     if (a1 > Math.PI / 2 && a1 <= Math.PI)
-      a1 = (Math.PI / 2) - (a1 - (Math.PI / 2))
-    
+        a1 = (Math.PI / 2) - (a1 - (Math.PI / 2))
+
     var ang1 = Math.PI / 2 - diagAngle - Math.abs(a1)
     var ang2 = Math.abs(diagAngle - Math.abs(a1))
-    
+
     var scale1 = Math.cos(ang1) * dist / image.height
     var scale2 = Math.cos(ang2) * dist / image.width
-    
+
     var scale = Math.max(scale1, scale2)
-    
+
     var dx = Math.cos(angle) * scale
-	
-	
+
+
     var dy = Math.sin(angle) * scale
-	console.log(ctx);
-	console.log(dx);
-	console.log(dy);
+    console.log(ctx);
+    console.log(dx);
+    console.log(dy);
     ctx.setTransform(dx, dy, -dy, dx, canvas.width / 2, canvas.height / 2)
-    
+
     ctx.drawImage(image, -image.width / 2, -image.height / 2, image.width, image.height)
-	
-	imgDataVal = ctx.getImageData(0, 0, canvas.width, canvas.height);
-	console.log(imgDataVal);
-    
-   ctx.setTransform(1, 0, 0, 1, 0, 0) // reset transformations when done
 
-  }
-  
-   const pixelConsole = function(ev){
-   imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-var data = imgData.data;
-var widthVal = imgData.width;
-var heightVal = imgData.height;
-        console.log("widthVal is ",widthVal);
-		console.log("heightVal is ",heightVal );
-	console.log(data);
-/*
-var arr = [];
-arr[0] = "Jani";
-arr[1] = "Hege";
-arr[2] = "Stale";
-arr[3] = "Kai Jim";
-arr[4] = "Borge";
+    imgDataVal = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    console.log(imgDataVal);
 
-console.log(arr.join());
-arr.splice(2, 0, "Lene");
-console.log(arr.join());
-*/
+    ctx.setTransform(1, 0, 0, 1, 0, 0) // reset transformations when done
 
-var array = data;
-const width = Math.sqrt(array.length);
-var size  = 100 / width;
-
-var map = new Map();
-
-
-
-for(var i = 0; i < 2048; i=i+4) {
- 
-  const x = i % width;
-  const y = Math.floor(i / width);
-  var coordinate = ""+x+","+y;
-  var currentvalue = array[i]+","+array[i+1]+","+array[i+2]+","+array[i+3];
-
-map.set(coordinate, currentvalue);
-
-  //tile.textContent        = `${array[i]} [${x},${y}]`;
-  //tile.style.width      = size+'%';
-  //tile.style.height     = size+'%';
-  //tile.style.float      = 'left';
-  //tile.style.background = 'rgb('+(50+i*5)+','+(150+i*5)+',200)';
-  
-console.log(map);
-  //document.getElementById('square').appendChild(tile);
-  
 }
+//******************************************************************************
+const pixelConsole = function(ev) {
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    var data = imgData.data;
+    var widthVal = imgData.width;
+    var heightVal = imgData.height;
+    console.log("widthVal is ", widthVal);
+    console.log("heightVal is ", heightVal);
+    console.log(data);
+    /*
+    var arr = [];
+    arr[0] = "Jani";
+    arr[1] = "Hege";
+    arr[2] = "Stale";
+    arr[3] = "Kai Jim";
+    arr[4] = "Borge";
 
-for (var i = data.length; i >= 0; i -= 4) {
-var newDdata = [];
-    if (data[i + 3] > 0 && i<128) {
-	
-	
-        console.log("red is", data[i] );
-        console.log("Green is is", data[i + 1] );
-        console.log("Blue is",data[i + 2] );
-		console.log("Alpha is",data[i + 3] );
-		
-		var x = (i / 4) % widthVal;
-var y = Math.floor((i / 4) / heightVal);
-	 console.log("X coordinate is ",x );
-        console.log("Y coordinate is ",y );
-		
-// get the position of pixel
-    var y1 = parseInt(i / widthVal, 10);
-    var x1 = i - y1 * widthVal;
+    console.log(arr.join());
+    arr.splice(2, 0, "Lene");
+    console.log(arr.join());
+    */
 
-        console.log("X1 coordinate is ",x1 );
-        console.log("Y1 coordinate is ",y1 );
+    var array = data;
+    const width = Math.sqrt(array.length);
+    var size = 100 / width;
+
+    var map = new Map();
+
+
+
+    for (var i = 0; i < 2048; i = i + 4) {
+
+        const x = i % width;
+        const y = Math.floor(i / width);
+        var coordinate = "" + x + "," + y;
+        var currentvalue = array[i] + "," + array[i + 1] + "," + array[i + 2] + "," + array[i + 3];
+
+        map.set(coordinate, currentvalue);
+
+        //tile.textContent        = `${array[i]} [${x},${y}]`;
+        //tile.style.width      = size+'%';
+        //tile.style.height     = size+'%';
+        //tile.style.float      = 'left';
+        //tile.style.background = 'rgb('+(50+i*5)+','+(150+i*5)+',200)';
+
+        console.log(map);
+        //document.getElementById('square').appendChild(tile);
+
+    }
+
+    for (var i = data.length; i >= 0; i -= 4) {
+        var newDdata = [];
+        if (data[i + 3] > 0 && i < 128) {
+
+
+            console.log("red is", data[i]);
+            console.log("Green is is", data[i + 1]);
+            console.log("Blue is", data[i + 2]);
+            console.log("Alpha is", data[i + 3]);
+
+            var x = (i / 4) % widthVal;
+            var y = Math.floor((i / 4) / heightVal);
+            console.log("X coordinate is ", x);
+            console.log("Y coordinate is ", y);
+
+            // get the position of pixel
+            var y1 = parseInt(i / widthVal, 10);
+            var x1 = i - y1 * widthVal;
+
+            console.log("X1 coordinate is ", x1);
+            console.log("Y1 coordinate is ", y1);
+        }
     }
 }
-   }
-		
-		
-			 const convertData = function(ev){
-            imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            let arr = imgData.data;
-			let updatedArr = new Uint8ClampedArray(arr.length);
-			console.log(arr);
-			
-            for(let i=0; i<arr.length; i=i+4){
-                //in the following four values, we need to set something from arr, so that it matches the rotated image's buffer 
-                updatedArr[i] = 0; ; //red
-                updatedArr[i+1]  = arr[i+1];//green
-                updatedArr[i+2]  = 0; // BLUE
-				updatedArr[i+3]  = 255;	//aLPHA
-				
-				arr[i] = updatedArr[i];     //R
-				arr[i+1] = updatedArr[i+1]; 
-                arr[i+2] = updatedArr[i+2];  
-                arr[i+3] = updatedArr[i+3];   //B
-				
-				
-				//updatedArr.splice(i, 0, arr[i]);
-				//updatedArr.splice(i+1, 0, arr[i+1]);
-				//updatedArr.splice(i+2, 0, arr[i+2]);
-				//updatedArr.splice(i+3, 0, arr[i+3]);
-			
-            }
-			console.log(updatedArr);
-			imgData.data = updatedArr;
-            ctx.putImageData(imgData, 0, 0);
-			
+
+//******************************************************************************
+const convertData = function(ev) {
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let arr = imgData.data;
+    let updatedArr = new Uint8ClampedArray(arr.length);
+    console.log(arr);
+
+    for (let i = 0; i < arr.length; i = i + 4) {
+        //in the following four values, we need to set something from arr, so that it matches the rotated image's buffer 
+        updatedArr[i] = 0;; //red
+        updatedArr[i + 1] = arr[i + 1]; //green
+        updatedArr[i + 2] = 0; // BLUE
+        updatedArr[i + 3] = 255; //aLPHA
+
+        arr[i] = updatedArr[i]; //R
+        arr[i + 1] = updatedArr[i + 1];
+        arr[i + 2] = updatedArr[i + 2];
+        arr[i + 3] = updatedArr[i + 3]; //B
+
+
+        //updatedArr.splice(i, 0, arr[i]);
+        //updatedArr.splice(i+1, 0, arr[i+1]);
+        //updatedArr.splice(i+2, 0, arr[i+2]);
+        //updatedArr.splice(i+3, 0, arr[i+3]);
+
+    }
+    console.log(updatedArr);
+    imgData.data = updatedArr;
+    ctx.putImageData(imgData, 0, 0);
+
+}
+
+//******************************************************************************
+const rotateDataOne = function(ev) {
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let arr = imgData.data;
+    let updatedArr = new Uint8ClampedArray(arr.length);
+    console.log(arr);
+
+    var normalCountForUpdate = 0;
+    var myWidth = canvas.width;
+    var myHeight = canvas.height;
+    for (var x = 0; x < myWidth; x++) {
+        for (var y = 0; y < myHeight; y++) {
+            index = 4 * (x + y * myWidth);
+
+            //index = y * (myWidth * 4) + x * 4;
+            updatedArr[normalCountForUpdate] = arr[index];
+            updatedArr[normalCountForUpdate + 1] = arr[index + 1];
+            updatedArr[normalCountForUpdate + 2] = arr[index + 2];
+            updatedArr[normalCountForUpdate + 3] = arr[index + 3];
+            normalCountForUpdate = normalCountForUpdate + 4;
         }
-		
-		
-		 const greyscale = function(ev){
-            imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            let arr = imgData.data;
-            for(let i=0; i<arr.length; i=i+4){
-                let ttl = arr[i] + arr[i+1] + arr[i+2];
-                let avg = parseInt(ttl/3);
-                arr[i] = avg;   //red
-                arr[i+1] = avg; //green
-                arr[i+2] = avg; //blue
-            }
-            imgData.data = arr;
-            ctx.putImageData(imgData, 0, 0);
+    }
+    for (let i = 0; i < arr.length; i = i + 4) {
+
+        arr[i] = updatedArr[i]; //R
+        arr[i + 1] = updatedArr[i + 1];
+        arr[i + 2] = updatedArr[i + 2];
+        arr[i + 3] = updatedArr[i + 3]; //B
+
+
+    }
+    console.log(updatedArr);
+    imgData.data = updatedArr;
+    ctx.putImageData(imgData, 0, 0);
+
+}
+//******************************************************************************
+//rotateDataOneWithAngle
+//*******************************************************************************
+const rotateDataOneWithAngle = function(ev) {
+
+var degrees = document.getElementById("angle").value;
+    alert("degrees is"+degrees);
+    var piVal = Math.PI;
+    angle = degrees * (piVal / 180);
+    if (angle == '' || angle == undefined) {
+        angle = 25 * (piVal / 180);
+    }
+	
+	alert("Angle in radian is"+angle);
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let arr = imgData.data;
+    let updatedArr = new Uint8ClampedArray(arr.length);
+    console.log(arr);
+
+	var center_x = canvas.width / 2;
+	var center_y = canvas.height / 2;
+
+    var normalCountForUpdate = 0;
+    var myWidth = canvas.width;
+    var myHeight = canvas.height;
+    for (var x = 0; x < myWidth; x++) {
+        for (var y = 0; y < myHeight; y++) {
+            index = 4 * (x + y * myWidth);
+			
+			//var newxp = parseInt((x - center_x) * Math.cos(angle) - (y - center_y) * Math.sin(angle) + center_x);
+            //var newyp = parseInt((x - center_x) * Math.sin(angle) + (y - center_y) * Math.cos(angle) + center_y);
+			
+			var newxp = parseInt((x - center_x) * Math.cos(angle) + (y - center_y) * Math.sin(angle) + center_x);
+            var newyp = parseInt((x - center_x) * Math.sin(angle) + (y - center_y) * Math.cos(angle) + center_y);
+			
+			var newIndex = 4 * (newxp + newyp * myWidth);
+            //index = y * (myWidth * 4) + x * 4;
+			
+			if (0 <= newxp < myWidth && 0 <= newyp < myHeight){
+			
+            updatedArr[normalCountForUpdate] = arr[newIndex];
+            updatedArr[normalCountForUpdate + 1] = arr[newIndex + 1];
+            updatedArr[normalCountForUpdate + 2] = arr[newIndex + 2];
+            updatedArr[normalCountForUpdate + 3] = arr[newIndex + 3];
+			}
+            normalCountForUpdate = normalCountForUpdate + 4;
         }
-        
-        const colorChannel = function(ev){
-            imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            let arr = imgData.data;
-            for(let i=0; i<arr.length; i=i+4){
-                arr[i] = 0;     //R
-                //arr[i+1] = 0;   //G
-                arr[i+2] = 0;   //B
-            }
-            imgData.data = arr;
-            ctx.putImageData(imgData, 0, 0);
-            
-            let img = canvas.toDataURL('image/jpeg', 1.0);
-            console.log(img);
-            document.querySelector('img').src = img;
+    }
+    for (let i = 0; i < arr.length; i = i + 4) {
+
+        arr[i] = updatedArr[i]; //R
+        arr[i + 1] = updatedArr[i + 1]; //G
+        arr[i + 2] = updatedArr[i + 2]; //B
+        arr[i + 3] = updatedArr[i + 3]; //A
+
+
+    }
+    console.log(updatedArr);
+    imgData.data = updatedArr;
+    ctx.putImageData(imgData, 0, 0);
+	ctx.setTransform(1, 0, 0, 1, 0, 0) // reset transformations when done
+
+}
+//******************************************************************************
+//rotateDataOneWithAngleTwo
+//*******************************************************************************
+const rotateDataOneWithAngleTwo = function(ev) {
+
+var degrees = document.getElementById("angle").value;
+    alert("degrees is"+degrees);
+    var piVal = Math.PI;
+    angle = degrees * (piVal / 180);
+    if (angle == '' || angle == undefined) {
+        angle = 25 * (piVal / 180);
+    }
+	
+	alert("Angle in radian is"+angle);
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let arr = imgData.data;
+    let updatedArr = new Uint8ClampedArray(arr.length);
+    console.log(arr);
+	
+	/*
+	let image = new Image();
+    image.src = './unsplash-5.jpeg';
+	    var dist = Math.sqrt(Math.pow(canvas.width, 2) + Math.pow(canvas.height, 2))
+    var diagAngle = Math.asin(canvas.height / dist)
+
+    var a1 = ((angle % (Math.PI * 2)) + Math.PI * 4) % (Math.PI * 2)
+    if (a1 > Math.PI)
+        a1 -= Math.PI
+    if (a1 > Math.PI / 2 && a1 <= Math.PI)
+        a1 = (Math.PI / 2) - (a1 - (Math.PI / 2))
+
+    var ang1 = Math.PI / 2 - diagAngle - Math.abs(a1)
+    var ang2 = Math.abs(diagAngle - Math.abs(a1))
+
+    var scale1 = Math.cos(ang1) * dist / image.height
+    var scale2 = Math.cos(ang2) * dist / image.width
+
+    var scale = Math.max(scale1, scale2)
+
+    var dx = Math.cos(angle) * scale
+
+
+    var dy = Math.sin(angle) * scale
+    console.log(ctx);
+    console.log(dx);
+    console.log(dy);
+    ctx.setTransform(dx, dy, -dy, dx, canvas.width / 2, canvas.height / 2)
+	*/
+	var center_x = canvas.width / 2;
+	var center_y = canvas.height / 2;
+
+    var normalCountForUpdate = 0;
+    var myWidth = canvas.width;
+    var myHeight = canvas.height;
+    for (var x = 0; x < myWidth; x++) {
+        for (var y = 0; y < myHeight; y++) {
+            index = 4 * (x + y * myWidth);
+			
+			var newxp = parseInt((x - center_x) * Math.cos(angle) - (y - center_y) * Math.sin(angle) + center_x);
+            var newyp = parseInt((x - center_x) * Math.sin(angle) + (y - center_y) * Math.cos(angle) + center_y);
+			var newIndex = 4 * (newxp + newyp * myWidth);
+            //index = y * (myWidth * 4) + x * 4;
+			
+			if (0 <= newxp < myWidth && 0 <= newyp < myHeight){
+			
+            updatedArr[normalCountForUpdate] = arr[newIndex];
+            updatedArr[normalCountForUpdate + 1] = arr[newIndex + 1];
+            updatedArr[normalCountForUpdate + 2] = arr[newIndex + 2];
+            updatedArr[normalCountForUpdate + 3] = arr[newIndex + 3];
+			}
+            normalCountForUpdate = normalCountForUpdate + 4;
         }
-    </script>
+    }
+    for (let i = 0; i < arr.length; i = i + 4) {
+
+        arr[i] = updatedArr[i]; //R
+        arr[i + 1] = updatedArr[i + 1]; //G
+        arr[i + 2] = updatedArr[i + 2]; //B
+        arr[i + 3] = updatedArr[i + 3]; //A
+
+
+    }
+    console.log(updatedArr);
+    imgData.data = updatedArr;
+    ctx.putImageData(imgData, 0, 0);
+	ctx.setTransform(1, 0, 0, 1, 0, 0) // reset transformations when done
+
+}
+//******************************************************************************
+const greyscale = function(ev) {
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let arr = imgData.data;
+    for (let i = 0; i < arr.length; i = i + 4) {
+        let ttl = arr[i] + arr[i + 1] + arr[i + 2];
+        let avg = parseInt(ttl / 3);
+        arr[i] = avg; //red
+        arr[i + 1] = avg; //green
+        arr[i + 2] = avg; //blue
+    }
+    imgData.data = arr;
+    ctx.putImageData(imgData, 0, 0);
+}
+//******************************************************************************
+const colorChannel = function(ev) {
+        imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let arr = imgData.data;
+        for (let i = 0; i < arr.length; i = i + 4) {
+            arr[i] = 0; //R
+            //arr[i+1] = 0;   //G
+            arr[i + 2] = 0; //B
+        }
+        imgData.data = arr;
+        ctx.putImageData(imgData, 0, 0);
+
+        let img = canvas.toDataURL('image/jpeg', 1.0);
+        console.log(img);
+        document.querySelector('img').src = img;
+    } 
+	</script>
 </body>
 </html>
