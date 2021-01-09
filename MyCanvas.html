@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Canvas</title>
+</head>
+<body>
+
+  <canvas id='canvas' style='border: 1px solid; width: 800px; height: 600px;'>
+    Sorry, your browser does not support the canvas tag.
+  </canvas>
+
+  <script>
+
+    // Cache a reference to the html element
+    var canvas = document.getElementById('canvas');
+
+    // Set the drawing surface dimensions to match the canvas
+    canvas.width  = canvas.scrollWidth;
+    canvas.height = canvas.scrollHeight;
+
+    // Get a reference to the 2d drawing context / api
+    var ctx = canvas.getContext('2d');
+
+    // ----------------------------------------------------
+    // Create a new image object
+    // ----------------------------------------------------
+
+    var image = new Image();
+
+
+    // ----------------------------------------------------
+    // Code to run when image has loaded
+    // ----------------------------------------------------
+
+    image.onload = function() {
+
+      // Draw image onto canvas (full size)
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      // Get pixel data from the canvas
+      var pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      // Iterate over all pixels to modify
+      // Each pixel equals 4 items in the array (r, g, b, a)
+      // 
+      // In this example:
+      // -------------------------------------------------- 
+      // Set the green and blue channels to 0, so we're 
+      // only left with the red channel
+
+      for(var i = 0; i < pixelData.data.length; i += 4) {
+
+        // Set green and blue channels to 0
+		//pixelData.data[i] = 255; // r
+        pixelData.data[i + 1] = 0; // g
+        pixelData.data[i + 2] = 0; // b
+      }
+
+      // Put new pixel data back into canvas
+      ctx.putImageData(pixelData, 0, 0);
+
+    };
+
+    // ----------------------------------------------------
+    // Start the image loading
+    // ----------------------------------------------------
+
+    image.src = './image.png';
+
+  </script>
+
+</body>
+</html>

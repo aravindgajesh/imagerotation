@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Canvas Images</title>
+    <style>
+        #canvas{
+            border: 1px solid #999;
+            margin: 1rem auto;
+            display: block;
+        }
+        img{
+            width: 80%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+<!--    <img src="./unsplash-5.jpeg" alt="Sample image https://unsplash.com/photos/PNKwdJ8WetM"/> -->
+    Your Rotation Angle is : <input type="text" id="angle"></input>
+    <script>
+        let canvas, ctx;
+        
+        document.addEventListener('DOMContentLoaded', (ev)=>{
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d'); 
+            canvas.width = 600;
+            canvas.height = 400;
+            
+            let imgObj = new Image();
+
+            imgObj.onload = function() {
+                let w = canvas.width;
+                let nw = imgObj.naturalWidth;   //1350
+                let nh = imgObj.naturalHeight;  //900
+                let aspect = nw / nh;
+                let h = w / aspect;
+                console.log('height', h)
+                canvas.height = h;
+                ctx.drawImage(imgObj, 0, 0, w, h);
+                //ctx.drawImage(imgObj, dx, dy);
+                //ctx.drawImage(imgObj, dx, dy, dw, dh);
+                //ctx.drawImage(imgObj, sx, sy, sw, sh, dx, dy, dw, dh);
+            };
+            
+            imgObj.src = './unsplash-5.jpeg';
+            
+            //canvas.addEventListener('click', greyscale);
+            //canvas.addEventListener('click', colorChannel);
+			canvas.addEventListener('click',drawBestFit);
+        });
+        
+         function drawBestFit() {
+		 canvas = document.getElementById('canvas');
+    
+	let image = new Image();
+	var angle  = document.getElementById("angle").value;
+	alert(angle);
+	if(angle == '' || angle == undefined){
+	alert("undefined");
+	angle = 25;
+	}
+	image.src = './unsplash-5.jpeg';
+    var dist = Math.sqrt(Math.pow(canvas.width, 2) + Math.pow(canvas.height, 2))
+    var diagAngle = Math.asin(canvas.height / dist)
+
+    var a1 = ((angle % (Math.PI * 2)) + Math.PI * 4) % (Math.PI * 2)
+    if (a1 > Math.PI)
+      a1 -= Math.PI
+    if (a1 > Math.PI / 2 && a1 <= Math.PI)
+      a1 = (Math.PI / 2) - (a1 - (Math.PI / 2))
+    
+    var ang1 = Math.PI / 2 - diagAngle - Math.abs(a1)
+    var ang2 = Math.abs(diagAngle - Math.abs(a1))
+    
+    var scale1 = Math.cos(ang1) * dist / image.height
+    var scale2 = Math.cos(ang2) * dist / image.width
+    
+    var scale = Math.max(scale1, scale2)
+    
+    var dx = Math.cos(angle) * scale
+    var dy = Math.sin(angle) * scale
+    ctx.setTransform(dx, dy, -dy, dx, canvas.width / 2, canvas.height / 2)
+    
+    ctx.drawImage(image, -image.width / 2, -image.height / 2, image.width, image.height)
+    
+   // ctx.setTransform(1, 0, 0, 1, 0, 0) // reset transformations when done
+
+  }
+		
+		 const greyscale = function(ev){
+            imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let arr = imgData.data;
+            for(let i=0; i<arr.length; i=i+4){
+                let ttl = arr[i] + arr[i+1] + arr[i+2];
+                let avg = parseInt(ttl/3);
+                arr[i] = avg;   //red
+                arr[i+1] = avg; //green
+                arr[i+2] = avg; //blue
+            }
+            imgData.data = arr;
+            ctx.putImageData(imgData, 0, 0);
+        }
+        
+        const colorChannel = function(ev){
+            imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let arr = imgData.data;
+            for(let i=0; i<arr.length; i=i+4){
+                arr[i] = 0;     //R
+                //arr[i+1] = 0;   //G
+                arr[i+2] = 0;   //B
+            }
+            imgData.data = arr;
+            ctx.putImageData(imgData, 0, 0);
+            
+            let img = canvas.toDataURL('image/jpeg', 1.0);
+            console.log(img);
+            document.querySelector('img').src = img;
+        }
+    </script>
+</body>
+</html>
