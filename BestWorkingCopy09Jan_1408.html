@@ -50,7 +50,6 @@
             
             //canvas.addEventListener('click', greyscale);
             //canvas.addEventListener('click', colorChannel);
-			canvas.addEventListener('click', pixelConsole);
 			myButton.addEventListener('click',drawBestFit);
         });
         
@@ -104,38 +103,6 @@
    ctx.setTransform(1, 0, 0, 1, 0, 0) // reset transformations when done
 
   }
-  
-   const pixelConsole = function(ev){
-   imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-var data = imgData.data;
-var widthVal = imgData.width;
-var heightVal = imgData.height;
-        console.log("widthVal is ",widthVal);
-		console.log("heightVal is ",heightVal );
-
-
-	console.log(data);
-for (var i = data.length; i >= 0; i -= 4) {
-    if (data[i + 3] > 0 && i<128) {
-        console.log("red is", data[i] );
-        console.log("Green is is", data[i + 1] );
-        console.log("Blue is",data[i + 2] );
-		console.log("Alpha is",data[i + 3] );
-		
-		var x = (i / 4) % widthVal;
-var y = Math.floor((i / 4) / heightVal);
-	 console.log("X coordinate is ",x );
-        console.log("Y coordinate is ",y );
-		
-// get the position of pixel
-    var y1 = parseInt(i / widthVal, 10);
-    var x1 = i - y1 * widthVal;
-
-        console.log("X1 coordinate is ",x1 );
-        console.log("Y1 coordinate is ",y1 );
-    }
-}
-   }
 		
 		 const greyscale = function(ev){
             imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
