@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Canvas Images</title>
+    <style>
+        #canvas{
+            border: 1px solid #999;
+            margin: 1rem auto;
+            display: block;
+        }
+		#trace p {
+    font-family:"Courier New", monospace;
+    font-size: 11px;
+    white-space: pre;
+}
+        img{
+            width: 80%;
+        }
+    </style>
+</head>
+<body>
+	 <canvas id="canvas"></canvas>
+	<input type="button" id="matButton" value="Clear"></input>
+	
+	
+	<script>
+	let canvas, ctx;
+var tile = [
+    [['A','B','C','D'], ['E','F','G','H'], ['I','J','K','L']],
+    [['M','N','O','P'], ['Q','R','S','T'], ['U','V','W','X']],
+    [['1','2','3','4'], ['5','6','7','8'], ['9','10','11','12']],
+    [['13','14','15','16'], ['17','18','19','20'],['21','22','23','24']]
+];
+
+var imageDataVal1 = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24'];
+
+
+bufferValVal = ['255', '255', '226', '226', '226', '6', '226', '8', '9', '220', '221', '222', '223', '224', '225', '226', '227', '228', '229', '20', '21', '22', '23', '24', '255', '255', '226', '226', '226', '6', '226', '8', '9', '220', '221', '222', '223', '224', '225', '226', '227', '228', '229', '20', '21', '22', '23', '24','255', '255', '226', '226', '226', '6', '226', '8', '9', '220', '221', '222', '223', '224', '225', '226'];
+var imageDataVal = new Uint8ClampedArray(bufferValVal);
+
+
+	document.addEventListener('DOMContentLoaded', (ev) => {
+    canvas = document.getElementById('canvas');
+    ctx = canvas.getContext('2d');
+
+    var imgObj = new Image();
+    imgObj.src = './test.jpeg';
+	imgObj.onload = function() {
+	
+    canvas.width = imgObj.naturalWidth;
+	
+    canvas.height = imgObj.naturalHeight;
+	
+	console.log(imgObj.naturalWidth);
+	console.log(imgObj.naturalHeight);
+        let w = canvas.width;
+        let nw = imgObj.naturalWidth; //1350
+		//alert("imgObj.naturalWidth is " + nw);
+        let nh = imgObj.naturalHeight; //900
+		//alert("imgObj.naturalHeight is " + nh);
+        let aspect = nw / nh;
+        let h = w / aspect;
+        console.log('height', h)
+        canvas.height = h;
+		
+		//alert("canvas.height is " + h);
+        ctx.drawImage(imgObj, 0, 0, w, h);
+		ctx.imageSmoothingEnabled =false;
+    };
+	var imgDataValForMatrix = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	console.log(imgDataValForMatrix);
+var tile2 = listToMatrix(imgDataValForMatrix.data,4);
+	matButton.addEventListener('click', printMatrix(rotateMatrix(tile2, 180)));
+/*	
+	trace2('Rotate +180', printMatrix(rotateMatrix(tile, 180)));
+trace2('Rotate +90', printMatrix(rotateMatrix(tile, 90)));
+trace2('Orginal', printMatrix(tile));
+trace2('Rotate -90', printMatrix(rotateMatrix(tile, -90)));
+trace2('Rotate -180', printMatrix(rotateMatrix(tile, -180)));*/
+});
+
+//************************************************************
+//listToMatrix
+//************************************************************
+function listToMatrix(list, elementsPerSubArray) {
+    
+    var matrix = [], i, k;
+
+    for (i = 0, k = -1; i < list.length; i++) {
+        if (i % elementsPerSubArray === 0) {
+            k++;
+            matrix[k] = [];
+        }
+
+        matrix[k].push(list[i]);
+    }
+	console.log(matrix);
+    return matrix;
+}
+
+var printMatrix = function (matrix) {
+  /*  var str = '';
+    for (var r = 0; r < matrix.length; r++) {
+        for (var c = 0; c < matrix[r].length; c++) {
+            var cell = matrix[r][c];
+            if (cell != 'undefined') {
+                str += pad(cell, 2);
+            } else {
+                str += '?';
+            }
+            if (c < matrix[r].length - 1) {
+                str += ' |';
+            }
+        }
+        if (r < matrix.length - 1) {
+            str += '\n';
+            for (var i = 0; i < matrix[r].length; i++) {
+                str += '---'
+                if (i < matrix[r].length - 1) {
+                    str += '+';
+                }
+            }
+            str += '\n';
+        }
+    }*/
+	console.log(matrix);
+	var merged = [].concat.apply([], matrix);
+console.log(merged);
+var mergedFinal = [].concat.apply([], merged);
+console.log(mergedFinal);
+    return matrix;
+};
+var rotateMatrix = function (matrix, direction) {
+    direction = direction % 360;
+
+    var deepCopy = function (obj) {
+        if (Object.prototype.toString.call(obj) === '[object Array]') {
+            var out = [],
+                i = 0,
+                len = obj.length;
+            for (; i < len; i++) {
+                out[i] = arguments.callee(obj[i]);
+            }
+            return out;
+        }
+        if (typeof obj === 'object') {
+            var out = {}, i;
+            for (i in obj) {
+                out[i] = arguments.callee(obj[i]);
+            }
+            return out;
+        }
+        return obj;
+    }
+
+    var ret = deepCopy(matrix);
+
+    // Does not work with non-square matricies.
+    var transpose1 = function (m) {
+        for (var i = 0; i < m.length; i++) {
+            for (var j = i; j < m[0].length; j++) {
+                var x = m[i][j];
+                m[i][j] = m[j][i];
+                m[j][i] = x;
+            }
+        }
+        return m;
+    };
+
+    // Too slow, builds new array THEN fills in the values.
+    var transpose2 = function (m) {
+        var result = arrayFilled(m.length, m[0].length, 0);
+        for (var i = 0; i < m.length; i++) {
+            for (var j = 0; j < m[0].length; j++) {
+                result[j][i] = m[i][j];
+            }
+        }
+        return result;
+    };
+
+    // Efficiently builds and fills values at the same time.
+    var transpose3 = function (m) {
+        var result = new Array(m[0].length);
+        for (var i = 0; i < m[0].length; i++) {
+            result[i] = new Array(m.length - 1);
+            for (var j = m.length - 1; j > -1; j--) {
+                result[i][j] = m[j][i];
+            }
+        }
+        return result;
+    };
+
+    var transpose = function (m) {
+        if (m.length === m[0].length) {
+            return transpose(m);
+        } else {
+            return transpose3(m);
+        }
+    };
+
+    var reverseRows = function (m) {
+        //for (var i = 0, k = m.length - 1; i < k; ++i, --k) {
+        //    var x = m[i];
+        //    m[i] = m[k];
+        //    m[k] = x;
+        //}
+        //return m;
+        return m.reverse();
+    };
+
+    var reverseCols = function (m) {
+        for (var i = 0; i < m.length; i++) {
+            //for (var j = 0, k = m[i].length - 1; j < k; ++j, --k) {
+            //    var x = m[i][j];
+            //    m[i][j] = m[i][k];
+            //    m[i][k] = x;
+            //}
+            m[i].reverse();
+        }
+        return m;
+    };
+
+    var rotate90Left = function (m) {
+        m = transpose(m);
+        m = reverseRows(m);
+        return m;
+    };
+
+    var rotate90Right = function (m) {
+        m = reverseRows(m);
+        m = transpose(m);
+        return m;
+    };
+
+    var rotate180 = function (m) {
+        m = reverseCols(m);
+        m = reverseRows(m);
+        return m;
+    };
+
+    if (direction == 90 || direction == -270) {
+        return rotate90Left(ret);
+    } else if (direction == -90 || direction == 270) {
+        return rotate90Right(ret);
+    } else if (Math.abs(direction) == 180) {
+        return rotate180(ret);
+    }
+
+    return matrix;
+};
+</script>
+</body>
+</html>

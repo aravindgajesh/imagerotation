@@ -18,6 +18,8 @@
     <canvas id="canvas"></canvas>
 	
 	<input type="button" id="clearButton" value="Clear"></input>
+	<input type="button" id="matrixButton" value="ConvertMatrix"></input>
+	
 	<br>
 	<h1> To rotate an image by calling the rotate function </h1>
 	 Enter Your Rotation Angle: <input type='number' id="angle2" value="90"></input>
@@ -71,6 +73,7 @@ document.addEventListener('DOMContentLoaded', (ev) => {
 	myButton.addEventListener('click', turnAndDraw);
 	myButton2.addEventListener('click', rotateDataOneWithAngleWithRotateFunction);
 	clearButton.addEventListener('click', imgObj.onload);
+	matrixButton.addEventListener('click', listToMatrix);
 });
 
 //******************************************************************************
@@ -78,6 +81,8 @@ document.addEventListener('DOMContentLoaded', (ev) => {
 //*******************************************************************************
 
 function turnAndDraw() {
+
+var t0 = performance.now();
     canvas = document.getElementById('canvas');
     var imgDataVal = ctx.getImageData(0, 0, canvas.width, canvas.height);
     console.log(imgDataVal);
@@ -119,9 +124,13 @@ function turnAndDraw() {
     ctx.drawImage(image, -image.width / 2, -image.height / 2, image.width, image.height)
 
     imgDataVal = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	
+	var t1 = performance.now();
+	console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.");
     console.log(imgDataVal);
 
     ctx.setTransform(1, 0, 0, 1, 0, 0) // reset transformations when done
+
 
 }
 //******************************************************************************
@@ -150,6 +159,7 @@ function rotateDataOneWithAngleWithRotateFunction() {
 
 
 function rotate(imageData, userAngle) {
+var t0 = performance.now();
 
     if (imageData == null || imageData == undefined || imageData.data == null || imageData.data == undefined) {
         alert("Please try with a valid image data of RGBA type");
@@ -178,7 +188,7 @@ function rotate(imageData, userAngle) {
     }
 	
 	/**
-	If you want to use degrees instead of radians, you have to convert degrees to radians: Angle in radians = Angle in degrees x PI / 180.
+	Angle in radians = Angle in degrees x PI / 180.
 	**/
     var piVal = Math.PI;
     radianAngle = userAngle * (piVal / 180);
@@ -233,12 +243,34 @@ function rotate(imageData, userAngle) {
 	console.log("*******************");
 	console.log(imageDataUpdatedAsImageDataObj);
     console.log("*******************");
+	var t1 = performance.now();
+	console.log("Call to doSomething took " + (t1 - t0) + " milliseconds.");
     return imageDataUpdatedAsImageDataObj;
 }
 
 
 
+//************************************************************
+//listToMatrix
+//************************************************************
+function listToMatrix(list, elementsPerSubArray) {
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    list = imgData.data;
+	elementsPerSubArray = 4;
+	
+    var matrix = [], i, k;
 
+    for (i = 0, k = -1; i < list.length; i++) {
+        if (i % elementsPerSubArray === 0) {
+            k++;
+            matrix[k] = [];
+        }
+
+        matrix[k].push(list[i]);
+    }
+	console.log(matrix);
+    return matrix;
+}
 
 
 
