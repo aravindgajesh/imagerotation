@@ -16,15 +16,16 @@
 </head>
 <body>
     <canvas id="canvas"></canvas>
-    
-<!--    <img src="./test.jpeg" alt="Sample image https://unsplash.com/photos/PNKwdJ8WetM"/> -->
-    Your Rotation Angle from 0 : <input type="text" id="angle" value="25"></input>
-	<input type="button" id="myButton" value="Rotate 1"></input>
-	
-	 Your Rotation Angle : <input type="text" id="angle2" value="25"></input>
-	<input type="button" id="myButton2" value="Rotate 2"></input>
 	
 	<input type="button" id="clearButton" value="Clear"></input>
+	<br>
+	<h1> To rotate an image by calling the rotate function </h1>
+	 Enter Your Rotation Angle: <input type='number' id="angle2" value="90"></input>
+	<input type="button" id="myButton2" value="Rotate 2"></input>
+	<br>
+	<h1> To rotate an image by finding the angle the canvas would be tilted</h1>
+    Enter Your Rotation Angle: <input type='number' id="angle" value="90"></input>
+	<input type="button" id="myButton" value="Rotate 1"></input>	
 <script >
     let canvas, ctx, myButton;
 
@@ -32,12 +33,17 @@ document.addEventListener('DOMContentLoaded', (ev) => {
     canvas = document.getElementById('canvas');
     myButton = document.getElementById('myButton');
     ctx = canvas.getContext('2d');
-    canvas.width = 425;
-    canvas.height = 425;
 
     let imgObj = new Image();
     imgObj.src = './test.jpeg';
     imgObj.onload = function() {
+	
+    canvas.width = imgObj.naturalWidth;
+	
+    canvas.height = imgObj.naturalHeight;
+	
+	console.log(imgObj.naturalWidth);
+	console.log(imgObj.naturalHeight);
         let w = canvas.width;
         let nw = imgObj.naturalWidth; //1350
 		//alert("imgObj.naturalWidth is " + nw);
@@ -51,9 +57,6 @@ document.addEventListener('DOMContentLoaded', (ev) => {
 		//alert("canvas.height is " + h);
         ctx.drawImage(imgObj, 0, 0, w, h);
 		ctx.imageSmoothingEnabled =false;
-        //ctx.drawImage(imgObj, dx, dy);
-        //ctx.drawImage(imgObj, dx, dy, dw, dh);
-        //ctx.drawImage(imgObj, sx, sy, sw, sh, dx, dy, dw, dh);
     };
 
 
@@ -65,13 +68,16 @@ document.addEventListener('DOMContentLoaded', (ev) => {
     //canvas.addEventListener('click', rotateDataOne);
 	//canvas.addEventListener('click', rotateDataOneWithAngle);
 	//canvas.addEventListener('click', rotateDataOneWithAngleTwo);
-    myButton.addEventListener('click', drawBestFit);
-	myButton2.addEventListener('click', rotateDataOneWithAngleTwo);
+	myButton.addEventListener('click', turnAndDraw);
+	myButton2.addEventListener('click', rotateDataOneWithAngleWithRotateFunction);
 	clearButton.addEventListener('click', imgObj.onload);
 });
 
 //******************************************************************************
-function drawBestFit() {
+//turnAndDraw
+//*******************************************************************************
+
+function turnAndDraw() {
     canvas = document.getElementById('canvas');
     var imgDataVal = ctx.getImageData(0, 0, canvas.width, canvas.height);
     console.log(imgDataVal);
@@ -118,12 +124,141 @@ function drawBestFit() {
     ctx.setTransform(1, 0, 0, 1, 0, 0) // reset transformations when done
 
 }
+//******************************************************************************
+//rotateDataOneWithAngleWithRotateFunction
+//*******************************************************************************
+function rotateDataOneWithAngleWithRotateFunction() {
+    //document.getElementById("clearButton").click();
+    var userAngle = document.getElementById("angle2").value;
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let arr = imgData.data;
+    updatedArrObj = rotate(imgData, userAngle);
+    if (updatedArrObj == null) {
+        return;
+    }
+    updatedArr = updatedArrObj.data;
+    for (let i = 0; i < arr.length; i = i + 4) {
+        arr[i] = updatedArr[i]; //R
+        arr[i + 1] = updatedArr[i + 1]; //G
+        arr[i + 2] = updatedArr[i + 2]; //B
+        arr[i + 3] = updatedArr[i + 3]; //A
+    }
+    imgData.data = updatedArr;
+    ctx.putImageData(imgData, 0, 0);
+    ctx.transform(1, 0, 0, 1, 0, 0);
+}
+
+
+function rotate(imageData, userAngle) {
+
+    if (imageData == null || imageData == undefined || imageData.data == null || imageData.data == undefined) {
+        alert("Please try with a valid image data of RGBA type");
+        return;
+    }
+    if (imageData.data.length % 4 != 0) {
+        alert("Image data of RGBA type is of invalid length");
+        return;
+    }
+
+    if (userAngle == null || userAngle == undefined || userAngle == '' || userAngle == '0' || userAngle == '360' ) {
+        alert("Please provide a valid angle to rotate the image.");
+			this.document.getElementById("angle2").value=0;
+       // userAngle = 360;
+		return;
+    }
+
+    if (parseInt(userAngle) > 360) {
+        userAngle = userAngle % 360;
+        console.log("final positive userAngle is:" + userAngle);
+    }
+
+    if (parseInt(userAngle) < -360) {
+        userAngle = userAngle % 360;
+        console.log("final negative userAngle is:" + userAngle);
+    }
+	
+	/**
+	If you want to use degrees instead of radians, you have to convert degrees to radians: Angle in radians = Angle in degrees x PI / 180.
+	**/
+    var piVal = Math.PI;
+    radianAngle = userAngle * (piVal / 180);
+    if (radianAngle == '' || radianAngle == undefined) {
+        radianAngle = 90 * (piVal / 180);
+    }
+
+    console.log("Angle in radian is" + radianAngle);
+	
+    let arr = imgData.data;
+    let updatedArr = new Uint8ClampedArray(arr.length);
+
+
+    var center_x = imgData.width / 2;
+    var center_y = imgData.height / 2;
+
+    var normalCountForUpdate = 0;
+    var myWidth = imgData.width;
+    var myHeight = imgData.height;
+    for (var x = 0; x < myWidth; x++) {
+        for (var y = 0; y < myHeight; y++) {
+            index = 4 * (x + y * myWidth);
+			/**
+			In linear algebra, a rotation matrix is a transformation matrix that is used to perform a rotation in Euclidean space. For example, using the convention below, the matrix rotates points in the xy-plane counterclockwise through an angle θ with respect to the x axis about the origin of a two-dimensional Cartesian coordinate system. 
+			
+			X2 = cos(θ)*x1 + sin(θ)*y1;
+			y2 = sin(θ)*x1 + cos(θ)*y1;
+			
+			To perform the rotation on a plane point with standard coordinates v = (x0,y0), it should be written as a column vector, and multiplied by the matrix R:
+			
+			X2 = cos(θ)*(x1-x0) + sin(θ)*(y1-y0);
+			y2 = sin(θ)*(x1-x0) + cos(θ)*(y1-y0);
+			**/
+            var newxp = parseInt((x - center_x) * Math.sin(radianAngle) + (y - center_y) * Math.cos(radianAngle) + center_y);
+            var newyp = parseInt((x - center_x) * Math.cos(radianAngle) - (y - center_y) * Math.sin(radianAngle) + center_x);
+            var newIndex = 4 * (newxp + newyp * myWidth);
+            if (0 <= newxp < myWidth && 0 <= newyp < myHeight) {
+                updatedArr[normalCountForUpdate] = arr[newIndex];
+                updatedArr[normalCountForUpdate + 1] = arr[newIndex + 1];
+                updatedArr[normalCountForUpdate + 2] = arr[newIndex + 2];
+                updatedArr[normalCountForUpdate + 3] = arr[newIndex + 3];
+            }
+            normalCountForUpdate = normalCountForUpdate + 4;
+        }
+    }
+    /*var imageDataUpdated = [];
+    imageDataUpdated.data = updatedArr;
+    imageDataUpdated.width = myWidth;
+    imageDataUpdated.height = myHeight;*/
+	
+	var imageDataUpdatedAsImageDataObj = new ImageData(updatedArr, myWidth, myHeight);
+	console.log("*******************");
+	console.log(imageDataUpdatedAsImageDataObj);
+    console.log("*******************");
+    return imageDataUpdatedAsImageDataObj;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //******************************************************************************
 //rotateDataOneWithAngleTwo
 //*******************************************************************************
-const rotateDataOneWithAngleTwo = function(ev) {
-document.getElementById("clearButton").click();
+function rotateDataOneWithAngleTwo() {
+//document.getElementById("clearButton").click();
 var degrees = document.getElementById("angle2").value;
 
 if(degrees == null || degrees == undefined || degrees==''){
@@ -146,40 +281,14 @@ console.log("final negative degree is:"+degrees);
     }
 	
 	console.log("Angle in radian is"+angle);
+	
     imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	
+rotate(imgData, angle);
     let arr = imgData.data;
     let updatedArr = new Uint8ClampedArray(arr.length);
     console.log(arr);
 	
-	/*
-	let image = new Image();
-    image.src = './unsplash-5.jpeg';
-	    var dist = Math.sqrt(Math.pow(canvas.width, 2) + Math.pow(canvas.height, 2))
-    var diagAngle = Math.asin(canvas.height / dist)
-
-    var a1 = ((angle % (Math.PI * 2)) + Math.PI * 4) % (Math.PI * 2)
-    if (a1 > Math.PI)
-        a1 -= Math.PI
-    if (a1 > Math.PI / 2 && a1 <= Math.PI)
-        a1 = (Math.PI / 2) - (a1 - (Math.PI / 2))
-
-    var ang1 = Math.PI / 2 - diagAngle - Math.abs(a1)
-    var ang2 = Math.abs(diagAngle - Math.abs(a1))
-
-    var scale1 = Math.cos(ang1) * dist / image.height
-    var scale2 = Math.cos(ang2) * dist / image.width
-
-    var scale = Math.max(scale1, scale2)
-
-    var dx = Math.cos(angle) * scale
-
-
-    var dy = Math.sin(angle) * scale
-    console.log(ctx);
-    console.log(dx);
-    console.log(dy);
-    ctx.setTransform(dx, dy, -dy, dx, canvas.width / 2, canvas.height / 2)
-	*/
 	var center_x = canvas.width / 2;
 	var center_y = canvas.height / 2;
 
@@ -218,68 +327,8 @@ console.log("final negative degree is:"+degrees);
     imgData.data = updatedArr;
     ctx.putImageData(imgData, 0, 0);
 	ctx.transform(1, 0, 0, 1, 0, 0);
-	//ctx.transform(-1, 0, 0, 1, width, 0);
-//	ctx.transform(-1, 0, 0, -1, width, height);
-//	ctx.transform(1, 0, 0, -1, 0, height);
-//	ctx.transform(0, 1, 1, 0, 0, 0);
-//	ctx.transform(0, 1, -1, 0, height, 0);
-//	ctx.transform(0, -1, -1, 0, height, width);
-//	ctx.transform(0, -1, 1, 0, 0, width);
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //******************************************************************************
 const pixelConsole = function(ev) {
@@ -292,14 +341,12 @@ const pixelConsole = function(ev) {
     console.log(data);
     /*
     var arr = [];
-    arr[0] = "Jani";
-    arr[1] = "Hege";
-    arr[2] = "Stale";
-    arr[3] = "Kai Jim";
-    arr[4] = "Borge";
+    arr[0] = "data";
+    arr[1] = "width";
+    arr[2] = "heigth";
 
     console.log(arr.join());
-    arr.splice(2, 0, "Lene");
+    arr.splice(2, 0, "data");
     console.log(arr.join());
     */
 
@@ -428,7 +475,6 @@ const rotateDataOne = function(ev) {
 //rotateDataOneWithAngle
 //*******************************************************************************
 const rotateDataOneWithAngle = function(ev) {
-
 var degrees = document.getElementById("angle").value;
 
     alert("degrees is"+degrees);
@@ -438,6 +484,36 @@ var degrees = document.getElementById("angle").value;
         angle = 25 * (piVal / 180);
     }
 	
+	
+	/*
+	let image = new Image();
+    image.src = './unsplash-5.jpeg';
+	    var dist = Math.sqrt(Math.pow(canvas.width, 2) + Math.pow(canvas.height, 2))
+    var diagAngle = Math.asin(canvas.height / dist)
+
+    var a1 = ((angle % (Math.PI * 2)) + Math.PI * 4) % (Math.PI * 2)
+    if (a1 > Math.PI)
+        a1 -= Math.PI
+    if (a1 > Math.PI / 2 && a1 <= Math.PI)
+        a1 = (Math.PI / 2) - (a1 - (Math.PI / 2))
+
+    var ang1 = Math.PI / 2 - diagAngle - Math.abs(a1)
+    var ang2 = Math.abs(diagAngle - Math.abs(a1))
+
+    var scale1 = Math.cos(ang1) * dist / image.height
+    var scale2 = Math.cos(ang2) * dist / image.width
+
+    var scale = Math.max(scale1, scale2)
+
+    var dx = Math.cos(angle) * scale
+
+
+    var dy = Math.sin(angle) * scale
+    console.log(ctx);
+    console.log(dx);
+    console.log(dy);
+    ctx.setTransform(dx, dy, -dy, dx, canvas.width / 2, canvas.height / 2)
+	*/
 	
 	alert("Angle in radian is"+angle);
     imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -508,6 +584,7 @@ const greyscale = function(ev) {
 const colorChannel = function(ev) {
         imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         let arr = imgData.data;
+		
         for (let i = 0; i < arr.length; i = i + 4) {
             arr[i] = 0; //R
             //arr[i+1] = 0;   //G
@@ -520,6 +597,8 @@ const colorChannel = function(ev) {
         console.log(img);
         document.querySelector('img').src = img;
     } 
+	
+
 	
 	
 	</script>
