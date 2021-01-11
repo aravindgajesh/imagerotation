@@ -45,7 +45,7 @@ var imageDataVal = new Uint8ClampedArray(bufferValVal);
     ctx = canvas.getContext('2d');
 
     var imgObj = new Image();
-    imgObj.src = './test.jpeg';
+    imgObj.src = './test1.jpeg';
 	imgObj.onload = function() {
 	
     canvas.width = imgObj.naturalWidth;
@@ -125,10 +125,10 @@ var printMatrix = function (matrix) {
         }
     }*/
 	console.log(matrix);
-	var merged = [].concat.apply([], matrix);
+	/*var merged = [].concat.apply([], matrix);
 console.log(merged);
 var mergedFinal = [].concat.apply([], merged);
-console.log(mergedFinal);
+console.log(mergedFinal);*/
     return matrix;
 };
 var rotateMatrix = function (matrix, direction) {
