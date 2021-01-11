@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rotator Task</title>
+    <style>
+        #canvas{
+            border: 1px solid #999;
+            margin: 1rem auto;
+            display: block;
+        }
+        img{
+            width: 80%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+	
+	<input type="button" id="clearButton" value="Clear"></input>
+	<!--<input type="button" id="matrixButton" value="ConvertMatrix"></input> -->
+	
+	<br>
+	<h2> To rotate using rotate function </h2>
+	 Enter Your Rotation Angle: <input type='number' id="angle2" value="90"></input>
+	<input type="button" id="myButton2" value="Rotate 1"></input>
+	 Time Taken: <input type='text' id="timeTaken2" >ms</input>
+	<br>
+	<h2> To rotate an image by finding the angle the canvas would be tilted</h2>
+    Enter Your Rotation Angle: <input type='number' id="angle" value="90"></input>
+	<input type="button" id="myButton" value="Rotate 2"></input>	
+	 Time Taken: <input type='text' id="timeTaken1" >ms</input>
+<script >
+    let canvas, ctx, myButton;
+
+document.addEventListener('DOMContentLoaded', (ev) => {
+    canvas = document.getElementById('canvas');
+    myButton = document.getElementById('myButton');
+    ctx = canvas.getContext('2d');
+
+    let imgObj = new Image();
+    imgObj.src = './MyImage.jpeg';
+    imgObj.onload = function() {
+	document.getElementById("timeTaken2").value = '';
+	document.getElementById("timeTaken1").value = '';
+	console.log(imgObj.naturalWidth);
+	console.log(imgObj.naturalHeight);
+	if(imgObj.naturalWidth > imgObj.naturalHeight){
+    canvas.width = imgObj.naturalWidth;
+	canvas.height = imgObj.naturalWidth;
+	} else if(imgObj.naturalWidth < imgObj.naturalHeight){
+    canvas.width = imgObj.naturalHeight;
+	canvas.height = imgObj.naturalHeight;
+	} else {
+    canvas.width = imgObj.naturalWidth;
+	canvas.height = imgObj.naturalHeight;
+	}
+	
+       
+/*	   let w = canvas.width;
+        let nw = imgObj.naturalWidth; //1350
+		//alert("imgObj.naturalWidth is " + nw);
+        let nh = imgObj.naturalHeight; //900
+		//alert("imgObj.naturalHeight is " + nh);
+        let aspect = nw / nh;
+        let h = w / aspect;
+        console.log('height', h)
+        canvas.height = h;*/
+		
+		//alert("canvas.height is " + h);
+        ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height);
+		ctx.imageSmoothingEnabled =false;
+    };
+
+
+
+    //canvas.addEventListener('click', greyscale);
+    //canvas.addEventListener('click', colorChannel);
+    //canvas.addEventListener('click', pixelConsole);
+    //canvas.addEventListener('click', convertData);
+    //canvas.addEventListener('click', rotateDataOne);
+	//canvas.addEventListener('click', rotateDataOneWithAngle);
+	//canvas.addEventListener('click', rotateDataOneWithAngleTwo);
+	myButton2.addEventListener('click', rotateImageWithRotateFunction);
+	myButton.addEventListener('click', rotateImageWithCanvasTilt);
+	//Reloads the image
+	clearButton.addEventListener('click', imgObj.onload);
+	//matrixButton.addEventListener('click', listToMatrix);
+});
+
+//******************************************************************************
+//rotateImageWithRotateFunction
+//*******************************************************************************
+function rotateImageWithRotateFunction() {
+    document.getElementById("clearButton").click();
+    var userAngle = document.getElementById("angle2").value;
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let arr = imgData.data;
+    updatedArrObj = rotate(imgData, userAngle);
+    if (updatedArrObj == null) {
+        return;
+    }
+    updatedArr = updatedArrObj.data;
+    for (let i = 0; i < arr.length; i = i + 4) {
+        arr[i] = updatedArr[i]; //R
+        arr[i + 1] = updatedArr[i + 1]; //G
+        arr[i + 2] = updatedArr[i + 2]; //B
+        arr[i + 3] = updatedArr[i + 3]; //A
+    }
+    imgData.data = updatedArr;
+    ctx.putImageData(imgData, 0, 0);
+    ctx.transform(1, 0, 0, 1, 0, 0);
+}
+
+/**
+Rotate function of type which will be the predominant function
+rotate(image: ImageData, angle: double) : ImageData 
+**/
+
+function rotate(imageData, userAngle) {
+var t0 = performance.now();
+
+    if (imageData == null || imageData == undefined || imageData.data == null || imageData.data == undefined) {
+        alert("Please try with a valid image data of RGBA type");
+        return;
+    }
+    if (imageData.data.length % 4 != 0) {
+        alert("Image data of RGBA type is of invalid length");
+        return;
+    }
+
+    if (userAngle == null || userAngle == undefined || userAngle == '' || userAngle == '0' || userAngle == '360' ) {
+        alert("Please provide a valid angle to rotate the image.");
+			this.document.getElementById("angle2").value=0;
+       // userAngle = 360;
+		return;
+    }
+
+    if (parseInt(userAngle) > 360) {
+        userAngle = userAngle % 360;
+        console.log("final positive userAngle is:" + userAngle);
+    }
+
+    if (parseInt(userAngle) < -360) {
+        userAngle = userAngle % 360;
+        console.log("final negative userAngle is:" + userAngle);
+    }
+	
+	/**
+	Angle in radians = Angle in degrees x PI / 180.
+	**/
+    var piVal = Math.PI;
+    radianAngle = userAngle * (piVal / 180);
+    if (radianAngle == '' || radianAngle == undefined) {
+        radianAngle = 90 * (piVal / 180);
+    }
+
+    console.log("Angle in radian is" + radianAngle);
+	
+    let arr = imgData.data;
+    let updatedArr = new Uint8ClampedArray(arr.length);
+
+
+    var center_x = imgData.width / 2;
+    var center_y = imgData.height / 2;
+	
+	console.log("center_x" + center_x);
+	console.log("center_y" + center_y)
+
+    var outputCounterForUpdate = 0;
+    var myWidth = imgData.width;
+    var myHeight = imgData.height;
+    for (var x = 0; x < myWidth; x++) {
+        for (var y = 0; y < myHeight; y++) {
+			/**
+			In linear algebra, a rotation matrix is a transformation matrix that is used to perform a rotation in Euclidean space. For example, using the convention below, the matrix rotates points in the xy-plane counterclockwise through an angle θ with respect to the x axis about the origin of a two-dimensional Cartesian coordinate system. 
+			
+			X2 = cos(θ)*x1 + sin(θ)*y1;
+			y2 = sin(θ)*x1 + cos(θ)*y1;
+			
+			To perform the rotation on a plane point with standard coordinates v = (x0,y0), it should be written as a column vector, and multiplied by the matrix R:
+			
+			X2 = cos(θ)*(x1-x0) + sin(θ)*(y1-y0);
+			y2 = sin(θ)*(x1-x0) + cos(θ)*(y1-y0);
+			
+            //var newxp = parseInt((x - center_x) * Math.cos(radianAngle) + (y - center_y) * Math.sin(radianAngle));
+			//var  newyp = parseInt((x - center_x) * Math.sin(radianAngle) - (y - center_y) * Math.cos(radianAngle));
+			**/
+			
+			//To perrform the same by finding the position of the current rotated image's pixel value from actul input data
+            var newxp = parseInt((x - center_x) * Math.sin(radianAngle) + (y - center_y) * Math.cos(radianAngle) + center_y);
+            var newyp = parseInt((x - center_x) * Math.cos(radianAngle) - (y - center_y) * Math.sin(radianAngle) + center_x);
+			
+			// 1.Think always image as an X x Y space, and two find a particular pixel position, loop through all the rows until the height of the image i,e (newyp * myWidth), and in the last rows
+			// go till the particular pixel i.e add til (newxp)
+			// 2. Since we have four colour cooridnates for each pixel(R,G,B,A), multiply the result by 4 to find the starting point of the required pixel in dataBauffer.		
+            var newIndex = 4 * (newxp + newyp * myWidth);
+           // if (0 <= newxp < myWidth && 0 <= newyp < myHeight) {
+				//
+                updatedArr[outputCounterForUpdate] = arr[newIndex]; // setting the Red value of identified pixel from input image into goint to be rotated image
+                updatedArr[outputCounterForUpdate + 1] = arr[newIndex + 1]; // setting the Green value of identified pixel from input image into goint to be rotated image
+                updatedArr[outputCounterForUpdate + 2] = arr[newIndex + 2]; // setting the Blue value of identified pixel from input image into goint to be rotated image
+                updatedArr[outputCounterForUpdate + 3] = arr[newIndex + 3]; // setting the Alpha value of identified pixel from input image into goint to be rotated image
+           // }
+            outputCounterForUpdate = outputCounterForUpdate + 4; // to go to the next pixel
+        }
+    }
+
+	// Creating a new ImageData Object which will be returned in this function.
+	var imageDataUpdatedAsImageDataObj = new ImageData(updatedArr, myWidth, myHeight);
+	console.log("*******************");
+	console.log(imageDataUpdatedAsImageDataObj);
+    console.log("*******************");
+	var t1 = performance.now();
+	console.log("Call to rotate() took " + (t1 - t0) + " milliseconds.");
+	this.document.getElementById("timeTaken2").value=(t1 - t0);
+    return imageDataUpdatedAsImageDataObj;
+}
+
+
+//******************************************************************************
+//rotateImageWithCanvasTilt - Second choice of rotation with tilting the canvas and getting the coordinates
+//*******************************************************************************
+
+function rotateImageWithCanvasTilt() {
+
+var t0 = performance.now();
+    canvas = document.getElementById('canvas');
+    var imgDataVal = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    console.log(imgDataVal);
+    
+    var degrees = document.getElementById("angle").value;
+    var piVal = Math.PI;
+    angle = degrees * (piVal / 180);
+    if (angle == '' || angle == undefined) {
+        angle = 25 * (piVal / 180);
+    }
+	let image = new Image();
+    image.src = './MyImage.jpeg';
+    var dist = Math.sqrt(Math.pow(canvas.width, 2) + Math.pow(canvas.height, 2))
+    var diagAngle = Math.asin(canvas.height / dist)
+
+    var a1 = ((angle % (Math.PI * 2)) + Math.PI * 4) % (Math.PI * 2)
+    if (a1 > Math.PI)
+        a1 -= Math.PI
+    if (a1 > Math.PI / 2 && a1 <= Math.PI)
+        a1 = (Math.PI / 2) - (a1 - (Math.PI / 2))
+
+    var ang1 = Math.PI / 2 - diagAngle - Math.abs(a1)
+    var ang2 = Math.abs(diagAngle - Math.abs(a1))
+
+    var scale1 = Math.cos(ang1) * dist / image.height
+    var scale2 = Math.cos(ang2) * dist / image.width
+
+    var scale = Math.max(scale1, scale2)
+
+    var dx = Math.cos(angle) * scale
+
+
+    var dy = Math.sin(angle) * scale
+    console.log(ctx);
+    console.log(dx);
+    console.log(dy);
+    ctx.setTransform(dx, dy, -dy, dx, canvas.width / 2, canvas.height / 2)
+
+    ctx.drawImage(image, -image.width / 2, -image.height / 2, image.width, image.height)
+
+    imgDataVal = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	
+	var t1 = performance.now();
+	console.log("Call to tilt and extract took " + (t1 - t0) + " milliseconds.");
+	
+	document.getElementById("timeTaken1").value=(t1 - t0);
+    console.log(imgDataVal);
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0) // reset transformations when done
+
+
+}
+
+
+//************************************************************
+//listToMatrix
+//************************************************************
+function listToMatrix(list, elementsPerSubArray) {
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    list = imgData.data;
+	elementsPerSubArray = 4;
+	
+    var matrix = [], i, k;
+
+    for (i = 0, k = -1; i < list.length; i++) {
+        if (i % elementsPerSubArray === 0) {
+            k++;
+            matrix[k] = [];
+        }
+
+        matrix[k].push(list[i]);
+    }
+	console.log(matrix);
+    return matrix;
+}
+
+
+//******************************************************************************
+//rotateDataOneWithAngleTwo
+//*******************************************************************************
+function rotateDataOneWithAngleTwo() {
+//document.getElementById("clearButton").click();
+var degrees = document.getElementById("angle2").value;
+
+if(degrees == null || degrees == undefined || degrees==''){
+degrees = 360;
+}
+
+if(parseInt(degrees)>360){
+degrees = degrees % 360;
+console.log("final positive degree is:"+degrees);
+}
+
+if(parseInt(degrees)<-360){
+degrees = degrees % 360;
+console.log("final negative degree is:"+degrees);
+}
+    var piVal = Math.PI;
+    angle = degrees * (piVal / 180);
+    if (angle == '' || angle == undefined) {
+        angle = 25 * (piVal / 180);
+    }
+	
+	console.log("Angle in radian is"+angle);
+	
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	
+rotate(imgData, angle);
+    let arr = imgData.data;
+    let updatedArr = new Uint8ClampedArray(arr.length);
+    console.log(arr);
+	
+	var center_x = canvas.width / 2;
+	var center_y = canvas.height / 2;
+
+    var normalCountForUpdate = 0;
+    var myWidth = canvas.width;
+    var myHeight = canvas.height;
+    for (var x = 0; x < myWidth; x++) {
+        for (var y = 0; y < myHeight; y++) {
+            index = 4 * (x + y * myWidth);
+			
+            var newxp = parseInt((x - center_x) * Math.sin(angle) + (y - center_y) * Math.cos(angle) + center_y);
+			var newyp = parseInt((x - center_x) * Math.cos(angle) - (y - center_y) * Math.sin(angle) + center_x);
+			var newIndex = 4 * (newxp + newyp * myWidth);
+            //index = y * (myWidth * 4) + x * 4;
+			
+			if (0 <= newxp < myWidth && 0 <= newyp < myHeight){
+			
+            updatedArr[normalCountForUpdate] = arr[newIndex];
+            updatedArr[normalCountForUpdate + 1] = arr[newIndex + 1];
+            updatedArr[normalCountForUpdate + 2] = arr[newIndex + 2];
+            updatedArr[normalCountForUpdate + 3] = arr[newIndex + 3];
+			}
+            normalCountForUpdate = normalCountForUpdate + 4;
+        }
+    }
+    for (let i = 0; i < arr.length; i = i + 4) {
+
+        arr[i] = updatedArr[i]; //R
+        arr[i + 1] = updatedArr[i + 1]; //G
+        arr[i + 2] = updatedArr[i + 2]; //B
+        arr[i + 3] = updatedArr[i + 3]; //A
+
+
+    }
+    console.log(updatedArr);
+    imgData.data = updatedArr;
+    ctx.putImageData(imgData, 0, 0);
+	ctx.transform(1, 0, 0, 1, 0, 0);
+
+}
+
+//******************************************************************************
+const pixelConsole = function(ev) {
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    var data = imgData.data;
+    var widthVal = imgData.width;
+    var heightVal = imgData.height;
+    console.log("widthVal is ", widthVal);
+    console.log("heightVal is ", heightVal);
+    console.log(data);
+    /*
+    var arr = [];
+    arr[0] = "data";
+    arr[1] = "width";
+    arr[2] = "heigth";
+
+    console.log(arr.join());
+    arr.splice(2, 0, "data");
+    console.log(arr.join());
+    */
+
+    var array = data;
+    const width = Math.sqrt(array.length);
+    var size = 100 / width;
+
+    var map = new Map();
+
+
+
+    for (var i = 0; i < 2048; i = i + 4) {
+
+        const x = i % width;
+        const y = Math.floor(i / width);
+        var coordinate = "" + x + "," + y;
+        var currentvalue = array[i] + "," + array[i + 1] + "," + array[i + 2] + "," + array[i + 3];
+
+        map.set(coordinate, currentvalue);
+
+        //tile.textContent        = `${array[i]} [${x},${y}]`;
+        //tile.style.width      = size+'%';
+        //tile.style.height     = size+'%';
+        //tile.style.float      = 'left';
+        //tile.style.background = 'rgb('+(50+i*5)+','+(150+i*5)+',200)';
+
+        console.log(map);
+        //document.getElementById('square').appendChild(tile);
+
+    }
+
+    for (var i = data.length; i >= 0; i -= 4) {
+        var newDdata = [];
+        if (data[i + 3] > 0 && i < 128) {
+
+
+            console.log("red is", data[i]);
+            console.log("Green is is", data[i + 1]);
+            console.log("Blue is", data[i + 2]);
+            console.log("Alpha is", data[i + 3]);
+
+            var x = (i / 4) % widthVal;
+            var y = Math.floor((i / 4) / heightVal);
+            console.log("X coordinate is ", x);
+            console.log("Y coordinate is ", y);
+
+            // get the position of pixel
+            var y1 = parseInt(i / widthVal, 10);
+            var x1 = i - y1 * widthVal;
+
+            console.log("X1 coordinate is ", x1);
+            console.log("Y1 coordinate is ", y1);
+        }
+    }
+}
+
+//******************************************************************************
+const convertData = function(ev) {
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let arr = imgData.data;
+    let updatedArr = new Uint8ClampedArray(arr.length);
+    console.log(arr);
+
+    for (let i = 0; i < arr.length; i = i + 4) {
+        //in the following four values, we need to set something from arr, so that it matches the rotated image's buffer 
+        updatedArr[i] = 0;; //red
+        updatedArr[i + 1] = arr[i + 1]; //green
+        updatedArr[i + 2] = 0; // BLUE
+        updatedArr[i + 3] = 255; //aLPHA
+
+        arr[i] = updatedArr[i]; //R
+        arr[i + 1] = updatedArr[i + 1];
+        arr[i + 2] = updatedArr[i + 2];
+        arr[i + 3] = updatedArr[i + 3]; //B
+
+
+        //updatedArr.splice(i, 0, arr[i]);
+        //updatedArr.splice(i+1, 0, arr[i+1]);
+        //updatedArr.splice(i+2, 0, arr[i+2]);
+        //updatedArr.splice(i+3, 0, arr[i+3]);
+
+    }
+    console.log(updatedArr);
+    imgData.data = updatedArr;
+    ctx.putImageData(imgData, 0, 0);
+
+}
+
+//******************************************************************************
+const rotateDataOne = function(ev) {
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let arr = imgData.data;
+    let updatedArr = new Uint8ClampedArray(arr.length);
+    console.log(arr);
+
+    var normalCountForUpdate = 0;
+    var myWidth = canvas.width;
+    var myHeight = canvas.height;
+    for (var x = 0; x < myWidth; x++) {
+        for (var y = 0; y < myHeight; y++) {
+            index = 4 * (x + y * myWidth);
+
+            //index = y * (myWidth * 4) + x * 4;
+            updatedArr[normalCountForUpdate] = arr[index];
+            updatedArr[normalCountForUpdate + 1] = arr[index + 1];
+            updatedArr[normalCountForUpdate + 2] = arr[index + 2];
+            updatedArr[normalCountForUpdate + 3] = arr[index + 3];
+            normalCountForUpdate = normalCountForUpdate + 4;
+        }
+    }
+    for (let i = 0; i < arr.length; i = i + 4) {
+
+        arr[i] = updatedArr[i]; //R
+        arr[i + 1] = updatedArr[i + 1];
+        arr[i + 2] = updatedArr[i + 2];
+        arr[i + 3] = updatedArr[i + 3]; //B
+
+
+    }
+    console.log(updatedArr);
+    imgData.data = updatedArr;
+    ctx.putImageData(imgData, 0, 0);
+
+}
+//******************************************************************************
+//rotateDataOneWithAngle
+//*******************************************************************************
+const rotateDataOneWithAngle = function(ev) {
+var degrees = document.getElementById("angle").value;
+
+    alert("degrees is"+degrees);
+    var piVal = Math.PI;
+    angle = degrees * (piVal / 180);
+    if (angle == '' || angle == undefined) {
+        angle = 25 * (piVal / 180);
+    }
+	
+	
+	/*
+	let image = new Image();
+    image.src = './unsplash-5.jpeg';
+	    var dist = Math.sqrt(Math.pow(canvas.width, 2) + Math.pow(canvas.height, 2))
+    var diagAngle = Math.asin(canvas.height / dist)
+
+    var a1 = ((angle % (Math.PI * 2)) + Math.PI * 4) % (Math.PI * 2)
+    if (a1 > Math.PI)
+        a1 -= Math.PI
+    if (a1 > Math.PI / 2 && a1 <= Math.PI)
+        a1 = (Math.PI / 2) - (a1 - (Math.PI / 2))
+
+    var ang1 = Math.PI / 2 - diagAngle - Math.abs(a1)
+    var ang2 = Math.abs(diagAngle - Math.abs(a1))
+
+    var scale1 = Math.cos(ang1) * dist / image.height
+    var scale2 = Math.cos(ang2) * dist / image.width
+
+    var scale = Math.max(scale1, scale2)
+
+    var dx = Math.cos(angle) * scale
+
+
+    var dy = Math.sin(angle) * scale
+    console.log(ctx);
+    console.log(dx);
+    console.log(dy);
+    ctx.setTransform(dx, dy, -dy, dx, canvas.width / 2, canvas.height / 2)
+	*/
+	
+	alert("Angle in radian is"+angle);
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let arr = imgData.data;
+    let updatedArr = new Uint8ClampedArray(arr.length);
+    console.log(arr);
+
+	var center_x = canvas.width / 2;
+	var center_y = canvas.height / 2;
+
+    var normalCountForUpdate = 0;
+    var myWidth = canvas.width;
+    var myHeight = canvas.height;
+    for (var x = 0; x < myWidth; x++) {
+        for (var y = 0; y < myHeight; y++) {
+            index = 4 * (x + y * myWidth);
+			
+			//var newxp = parseInt((x - center_x) * Math.cos(angle) - (y - center_y) * Math.sin(angle) + center_x);
+            //var newyp = parseInt((x - center_x) * Math.sin(angle) + (y - center_y) * Math.cos(angle) + center_y);
+			
+			var newxp = parseInt((x - center_x) * Math.cos(angle) - (y - center_y) * Math.sin(angle) + center_x);
+            var newyp = parseInt((x - center_x) * Math.sin(angle) + (y - center_y) * Math.cos(angle) + center_y);
+			
+			var newIndex = 4 * (newxp + newyp * myWidth);
+            //index = y * (myWidth * 4) + x * 4;
+			
+			if (0 <= newxp < myWidth && 0 <= newyp < myHeight){
+			
+            updatedArr[normalCountForUpdate] = arr[newIndex];
+            updatedArr[normalCountForUpdate + 1] = arr[newIndex + 1];
+            updatedArr[normalCountForUpdate + 2] = arr[newIndex + 2];
+            updatedArr[normalCountForUpdate + 3] = arr[newIndex + 3];
+			}
+            normalCountForUpdate = normalCountForUpdate + 4;
+        }
+    }
+    for (let i = 0; i < arr.length; i = i + 4) {
+
+        arr[i] = updatedArr[i]; //R
+        arr[i + 1] = updatedArr[i + 1]; //G
+        arr[i + 2] = updatedArr[i + 2]; //B
+        arr[i + 3] = updatedArr[i + 3]; //A
+
+
+    }
+    console.log(updatedArr);
+    imgData.data = updatedArr;
+    ctx.putImageData(imgData, 0, 0);
+	ctx.setTransform(1, 0, 0, 1, 0, 0) // reset transformations when done
+
+}
+
+//******************************************************************************
+const greyscale = function(ev) {
+    imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let arr = imgData.data;
+    for (let i = 0; i < arr.length; i = i + 4) {
+        let ttl = arr[i] + arr[i + 1] + arr[i + 2];
+        let avg = parseInt(ttl / 3);
+        arr[i] = avg; //red
+        arr[i + 1] = avg; //green
+        arr[i + 2] = avg; //blue
+    }
+    imgData.data = arr;
+    ctx.putImageData(imgData, 0, 0);
+}
+//******************************************************************************
+const colorChannel = function(ev) {
+        imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let arr = imgData.data;
+		
+        for (let i = 0; i < arr.length; i = i + 4) {
+            arr[i] = 0; //R
+            //arr[i+1] = 0;   //G
+            arr[i + 2] = 0; //B
+        }
+        imgData.data = arr;
+        ctx.putImageData(imgData, 0, 0);
+
+        let img = canvas.toDataURL('image/jpeg', 1.0);
+        console.log(img);
+        document.querySelector('img').src = img;
+    } 
+	
+
+	
+	
+	</script>
+</body>
+</html>
