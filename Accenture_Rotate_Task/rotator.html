@@ -116,7 +116,7 @@ function rotateImageWithRotateFunction() {
 Rotate function of type which will be the predominant function
 rotate(image: ImageData, angle: double) : ImageData 
 **/
-
+//*****************************************rotate(image: ImageData, angle: double) : ImageData****************************
 function rotate(imageData, userAngle) {
 var t0 = performance.now();
 
@@ -281,7 +281,7 @@ var t0 = performance.now();
 //************************************************************
 //listToMatrix
 //************************************************************
-function listToMatrix(list, elementsPerSubArray) {
+/*function listToMatrix(list, elementsPerSubArray) {
     imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     list = imgData.data;
 	elementsPerSubArray = 4;
@@ -298,13 +298,13 @@ function listToMatrix(list, elementsPerSubArray) {
     }
 	console.log(matrix);
     return matrix;
-}
+}*/
 
 
 //******************************************************************************
 //rotateDataOneWithAngleTwo
 //*******************************************************************************
-function rotateDataOneWithAngleTwo() {
+/*function rotateDataOneWithAngleTwo() {
 //document.getElementById("clearButton").click();
 var degrees = document.getElementById("angle2").value;
 
@@ -375,10 +375,10 @@ rotate(imgData, angle);
     ctx.putImageData(imgData, 0, 0);
 	ctx.transform(1, 0, 0, 1, 0, 0);
 
-}
+}*/
 
 //******************************************************************************
-const pixelConsole = function(ev) {
+/*const pixelConsole = function(ev) {
     imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     var data = imgData.data;
     var widthVal = imgData.width;
@@ -386,7 +386,7 @@ const pixelConsole = function(ev) {
     console.log("widthVal is ", widthVal);
     console.log("heightVal is ", heightVal);
     console.log(data);
-    /*
+    
     var arr = [];
     arr[0] = "data";
     arr[1] = "width";
@@ -395,7 +395,7 @@ const pixelConsole = function(ev) {
     console.log(arr.join());
     arr.splice(2, 0, "data");
     console.log(arr.join());
-    */
+    
 
     var array = data;
     const width = Math.sqrt(array.length);
@@ -448,10 +448,10 @@ const pixelConsole = function(ev) {
             console.log("Y1 coordinate is ", y1);
         }
     }
-}
+}*/
 
 //******************************************************************************
-const convertData = function(ev) {
+/*const convertData = function(ev) {
     imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     let arr = imgData.data;
     let updatedArr = new Uint8ClampedArray(arr.length);
@@ -480,10 +480,10 @@ const convertData = function(ev) {
     imgData.data = updatedArr;
     ctx.putImageData(imgData, 0, 0);
 
-}
+}*/
 
 //******************************************************************************
-const rotateDataOne = function(ev) {
+/*const rotateDataOne = function(ev) {
     imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     let arr = imgData.data;
     let updatedArr = new Uint8ClampedArray(arr.length);
@@ -517,11 +517,11 @@ const rotateDataOne = function(ev) {
     imgData.data = updatedArr;
     ctx.putImageData(imgData, 0, 0);
 
-}
+}*/
 //******************************************************************************
 //rotateDataOneWithAngle
 //*******************************************************************************
-const rotateDataOneWithAngle = function(ev) {
+/*const rotateDataOneWithAngle = function(ev) {
 var degrees = document.getElementById("angle").value;
 
     alert("degrees is"+degrees);
@@ -560,7 +560,7 @@ var degrees = document.getElementById("angle").value;
     console.log(dx);
     console.log(dy);
     ctx.setTransform(dx, dy, -dy, dx, canvas.width / 2, canvas.height / 2)
-	*/
+	
 	
 	alert("Angle in radian is"+angle);
     imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -611,10 +611,10 @@ var degrees = document.getElementById("angle").value;
     ctx.putImageData(imgData, 0, 0);
 	ctx.setTransform(1, 0, 0, 1, 0, 0) // reset transformations when done
 
-}
+}*/
 
 //******************************************************************************
-const greyscale = function(ev) {
+/*const greyscale = function(ev) {
     imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     let arr = imgData.data;
     for (let i = 0; i < arr.length; i = i + 4) {
@@ -644,7 +644,11 @@ const colorChannel = function(ev) {
         console.log(img);
         document.querySelector('img').src = img;
     } 
-	
+	*/
+//************************************************************
+//rotateMatrix function
+//*************************************************************	
+	/*
 var rotateMatrix = function (matrix, direction) {
     direction = direction % 360;
 
@@ -764,7 +768,7 @@ var rotateMatrix = function (matrix, direction) {
     return matrix;
 };
 	
-	
+	*/
 	</script>
 </body>
 </html>
